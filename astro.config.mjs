@@ -12,6 +12,9 @@ export default defineConfig({
         alt: 'CERIL'
       },
       favicon: '/ceril-mark.svg',
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/hosynS/personal-blog' }
+      ],
       customCss: ['./src/styles/custom.css'],
       sidebar: [
         {

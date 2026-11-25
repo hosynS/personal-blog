@@ -1,0 +1,101 @@
+---
+interface Props {
+  slug: string;
+  active: 'overview' | 'architecture' | 'cheatsheet' | 'errors-and-fixes' | 'interview-prep';
+}
+
+const { slug, active } = Astro.props;
+
+const basePath = `/projects/${slug}`;
+
+const tabs = [
+  { id: 'overview', label: 'Overview', href: `${basePath}/`, icon: 'document' },
+  { id: 'architecture', label: 'Architecture', href: `${basePath}/architecture/`, icon: 'setting' },
+  { id: 'cheatsheet', label: 'Cheatsheet', href: `${basePath}/cheatsheet/`, icon: 'pencil' },
+  { id: 'errors-and-fixes', label: 'Errors & Fixes', href: `${basePath}/errors-and-fixes/`, icon: 'warning' },
+  { id: 'interview-prep', label: 'Interview Prep', href: `${basePath}/interview-prep/`, icon: 'star' },
+];
+---
+
+<nav class="project-pill-nav not-content" aria-label="Project Sections">
+  <div class="project-pill-scroll">
+    {tabs.map((tab) => {
+      const isCurrent = active === tab.id;
+      return (
+        <a
+          href={tab.href}
+          class={`project-pill-item ${isCurrent ? 'is-active' : ''}`}
+          aria-current={isCurrent ? 'page' : undefined}
+        >
+          {tab.id === 'architecture' && <span class="pill-sparkle">★</span>}
+          <span>{tab.label}</span>
+          {isCurrent && <span class="pill-indicator"></span>}
+        </a>
+      );
+    })}
+  </div>
+</nav>
+
+<style>
+  .project-pill-nav {
+    margin: 0.5rem 0 2rem 0;
+    padding: 0.35rem;
+    background: color-mix(in srgb, var(--sl-color-black, #0a1114) 88%, var(--sl-color-accent-low, #102b3a));
+    border: 1px solid color-mix(in srgb, var(--sl-color-accent) 25%, var(--sl-color-gray-5, #24333e));
+    border-radius: 9999px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  }
+
+  .project-pill-scroll {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0.1rem;
+  }
+
+  .project-pill-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .project-pill-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.84rem;
+    font-weight: 550;
+    color: var(--sl-color-gray-2, #a7b6b9);
+    text-decoration: none;
+    border-radius: 9999px;
+    white-space: nowrap;
+    transition: all 0.16s ease-in-out;
+  }
+
+  .project-pill-item:hover {
+    color: var(--sl-color-white, #f3f7f8);
+    background: color-mix(in srgb, var(--sl-color-accent-low) 50%, transparent);
+    text-decoration: none;
+  }
+
+  .project-pill-item.is-active {
+    color: #041014;
+    background: var(--sl-color-accent-high, #a4edf0);
+    font-weight: 650;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--sl-color-accent-high) 40%, transparent);
+  }
+
+  .pill-sparkle {
+    font-size: 0.78rem;
+    color: inherit;
+  }
+
+  @media (max-width: 640px) {
+    .project-pill-item {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.78rem;
+    }
+  }
+</style>

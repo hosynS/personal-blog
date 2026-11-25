@@ -1,9 +1,12 @@
 ---
-title: "Distributed Task Management API — Architecture Design"
+title: "Distributed Task API — Architecture Design"
 description: "Component topology, communication boundaries, and interactive Archify diagram for Distributed Task Management API."
 ---
 
 import ArchifyDiagram from '../../../../components/ArchifyDiagram.astro';
+import ProjectNav from '../../../../components/ProjectNav.astro';
+
+<ProjectNav slug="distributed-task-api" active="architecture" />
 
 ## System Overview & Boundaries
 
@@ -17,8 +20,8 @@ Inspect components, trace data paths, and review dependencies directly on the in
 
 <ArchifyDiagram
   src="/diagrams/distributed-task-api-architecture.html"
-  title="Distributed Task Management API System Architecture"
-  height="580px"
+  title="Distributed Task API System Architecture"
+  height="600px"
   caption="Generated using Archify. Click any component to inspect metadata or trace upstream/downstream connections."
 />
 
@@ -44,7 +47,7 @@ Inspect components, trace data paths, and review dependencies directly on the in
 
 ### Read Path (Cache-Aside Pattern)
 1. Ingress verifies client authorization token.
-2. API Service queries Redis cache with key `resource:<id>`.
+2. API Service queries Redis cache with key `task:<id>`.
 3. **Cache Hit:** Returns payload within 2ms.
 4. **Cache Miss:** Queries PostgreSQL via connection pool, populates Redis with 300s TTL, and returns response.
 
@@ -57,6 +60,6 @@ Inspect components, trace data paths, and review dependencies directly on the in
 
 ## Related References
 - [Project Overview & Stack Details](./)
-- [Operational Runbook & Cheatsheet](./cheatsheet/)
-- [Failures & Debugging Solutions](./errors-and-fixes/)
-- [System Design Interview Discussion](./interview-prep/)
+- [Operational Runbook & Cheatsheet](../cheatsheet/)
+- [Failures & Debugging Solutions](../errors-and-fixes/)
+- [System Design Interview Discussion](../interview-prep/)

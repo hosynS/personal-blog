@@ -1,9 +1,11 @@
 ---
-title: "Distributed Task Management API — Errors & Debugging Log"
+title: "Distributed Task API — Errors & Debugging Log"
 description: "Catalog of production failures, misleading clues, root-cause analyses, verified fixes, and prevention guardrails for Distributed Task Management API."
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import ProjectNav from '../../../../components/ProjectNav.astro';
+
+<ProjectNav slug="distributed-task-api" active="errors-and-fixes" />
 
 This catalog documents the hard-won engineering failures encountered during the development, testing, and scaling of Distributed Task Management API. Each entry follows the 6-point verification standard: exact symptom, misleading clue, investigation, root cause, verified fix, and prevention rule.
 
@@ -11,21 +13,28 @@ This catalog documents the hard-won engineering failures encountered during the 
 
 ## Incident 1: Database Connection Pool Exhaustion Under Concurrent Load
 
-### 1. Symptom & Exact Error
-Under simulated load testing (500 concurrent users), the service stopped responding and application logs filled with:
-
-```text
-ERROR [db_pool] pool timeout: connection pool exhausted (max_size=10)
+<div class="rca-box rca-error">
+  <div class="rca-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span>1. Symptom & Exact Error</span>
+  </div>
+  <p>Under simulated load testing (500 concurrent users), the service stopped responding and application logs filled with:</p>
+  <pre><code>ERROR [db_pool] pool timeout: connection pool exhausted (max_size=10)
   at Pool.acquire (/app/node_modules/pg-pool/index.js:142:19)
   at async UserService.getUserProfile (/app/src/services/user.service.js:45:18)
-HTTP/1.1 504 Gateway Timeout (TTFB: 30,002ms)
-```
+HTTP/1.1 504 Gateway Timeout (TTFB: 30,002ms)</code></pre>
+</div>
 
-### 2. Misleading Clues
-- CPU and memory usage on both the API pods and the PostgreSQL server were below 15%.
-- Team initially suspected PostgreSQL server crash or networking firewall drops between Kubernetes worker nodes.
+<div class="rca-box rca-misleading">
+  <div class="rca-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+    <span>2. Misleading Clues</span>
+  </div>
+  <p>CPU and memory usage on both the API pods and the PostgreSQL server were below 15%. The team initially suspected network firewall packet drops between Kubernetes worker nodes.</p>
+</div>
 
 ### 3. Investigation & Diagnostic Commands
+
 ```bash
 # 1. Inspect live PostgreSQL connection states
 psql $DATABASE_URL -c "SELECT state, count(*) FROM pg_stat_activity GROUP BY state;"
@@ -33,13 +42,20 @@ psql $DATABASE_URL -c "SELECT state, count(*) FROM pg_stat_activity GROUP BY sta
 # 2. Check connections in 'idle in transaction' state
 psql $DATABASE_URL -c "SELECT pid, state, age(clock_timestamp(), state_change), query FROM pg_stat_activity WHERE state = 'idle in transaction';"
 ```
+
 **Observation:** 10 connections were stuck in `idle in transaction` for over 15 minutes each.
 
 ### 4. Root Cause Analysis (RCA)
+
 An async error inside an unhandled promise rejection in `UserService.getUserProfile` threw an error *after* `pool.connect()` was called but *before* the transaction commit/rollback could execute. Because the `finally` block did not call `client.release()`, the connection was leaked forever until process termination.
 
-### 5. The Verified Fix
-Implemented the RAII / scope-guard pattern ensuring client release in `finally` and introduced automatic transaction wrappers:
+<div class="rca-box rca-fix">
+  <div class="rca-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <span>5. The Verified Fix</span>
+  </div>
+  <p>Implemented the RAII / scope-guard pattern ensuring client release in <code>finally</code> and introduced automatic transaction wrappers:</p>
+</div>
 
 ```javascript
 // BEFORE (Vulnerable to connection leaks)
@@ -64,6 +80,7 @@ try {
 ```
 
 ### 6. Prevention Guardrail
+
 - Added ESLint rule `no-floating-promises` and a unit test harness asserting connection pool returns to 0 active checkouts after simulated service failures.
 - Configured PostgreSQL server-side: `idle_in_transaction_session_timeout = '15s'`.
 
@@ -71,9 +88,12 @@ try {
 
 ## Incident 2: JWT Refresh Token Expiration Miscalculation
 
-### 1. Symptom & Exact Error
-Users reported frequent unexpected logouts even while actively using the application. Mobile client logs reported:
-
+<div class="rca-box rca-error">
+  <div class="rca-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span>1. Symptom & Exact Error</span>
+  </div>
+  <p>Users reported frequent unexpected logouts even while actively using the application:</p>
 ```json
 {
   "status": 401,
@@ -81,12 +101,18 @@ Users reported frequent unexpected logouts even while actively using the applica
   "message": "jwt expired: current timestamp 1731500000 > exp 1731471200"
 }
 ```
+</div>
 
-### 2. Misleading Clues
-The token configuration file had clearly set: `REFRESH_TOKEN_TTL=7d` (7 days). The engineering team assumed clock skew on client devices.
+<div class="rca-box rca-misleading">
+  <div class="rca-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+    <span>2. Misleading Clues</span>
+  </div>
+  <p>The token configuration had set <code>REFRESH_TOKEN_TTL=7d</code>. The team assumed client device clock drift.</p>
+</div>
 
 ### 3. Investigation
-Inspecting the decoded JWT header and claims:
+
 ```bash
 echo "eyJhbGciOi..." | jwt decode -
 # Output:
@@ -95,18 +121,20 @@ echo "eyJhbGciOi..." | jwt decode -
 ```
 
 ### 4. Root Cause Analysis
-The JWT generation helper was passed `REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000`. However, the underlying JWT signing library interpreted integer values as **seconds**, not milliseconds. Therefore, passing a raw millisecond integer resulted in a timestamp modulo wrapping issue, causing the token to expire in seconds.
 
-### 5. The Verified Fix
-Passed explicit string duration units and introduced type-safe time duration wrappers:
+The JWT helper received `REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000`. However, the signing library expected duration in **seconds**, not milliseconds. Passing raw millisecond integers caused a timestamp overflow wrapping issue.
 
-```typescript
-// Fixed token issuance with explicit unit
-const token = jwt.sign(payload, secret, { expiresIn: '7d' });
-```
+<div class="rca-box rca-fix">
+  <div class="rca-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <span>5. The Verified Fix</span>
+  </div>
+  <p>Fixed token issuance with explicit unit string: <code>jwt.sign(payload, secret, &#123; expiresIn: '7d' &#125;)</code></p>
+</div>
 
 ### 6. Prevention Guardrail
-Added integration tests checking token claim assertions:
+
+Added CI tests asserting token duration bounds:
 ```typescript
 test('refresh token exp must be at least 6 days in future', () => {
   const token = generateRefreshToken(mockUser);
@@ -119,6 +147,6 @@ test('refresh token exp must be at least 6 days in future', () => {
 
 ## Related References
 - [Project Overview & Stack Details](./)
-- [Architecture & Archify Visual Map](./architecture/)
-- [Cheatsheet & Commands](./cheatsheet/)
-- [Interview Deep Dives & Lessons](./interview-prep/)
+- [Architecture & Archify Visual Map](../architecture/)
+- [Cheatsheet & Commands](../cheatsheet/)
+- [Interview Deep Dives & Lessons](../interview-prep/)
