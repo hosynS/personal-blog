@@ -1,0 +1,78 @@
+---
+title: Evidence model
+description: The four-part structure that turns project work into credible engineering documentation.
+---
+
+The portfolio proves that a project exists and works. This blog proves how I think while building and operating it.
+
+Every substantial project should leave behind four connected kinds of evidence:
+
+## 1. Decisions
+
+Explain the important choices and the constraints behind them.
+
+- What problem needed solving?
+- Which options were considered?
+- Why was this design selected?
+- What trade-off was accepted?
+
+This shows judgment, not just tool familiarity.
+
+## 2. Failures
+
+Document the errors, unexpected behavior, and failed approaches that changed the direction of the work.
+
+- What was the exact symptom?
+- What was the blast radius?
+- Which hypotheses were wrong?
+- What was the root cause?
+
+Failure documentation demonstrates that I can investigate a real system without guessing.
+
+## 3. Measurements
+
+Show how success was evaluated before and after the change.
+
+- Which baseline was recorded?
+- Which metric or test proves the result?
+- What changed numerically?
+- What remains unknown?
+
+A claim such as “faster” or “more reliable” is incomplete without a measurement or a reproducible verification step.
+
+## 4. Operations
+
+Explain how the system is run after the project is complete.
+
+- How is health checked?
+- What should an operator do when it degrades?
+- What is the safe rollback?
+- Which alert, dashboard, or automation prevents recurrence?
+
+This is where a project becomes useful beyond its demo.
+
+## Connecting the pages
+
+One project may produce several pages:
+
+1. **Project page** — the portfolio result, architecture, and capabilities.
+2. **Decision notes** — the reasoning behind important design choices.
+3. **Error or incident records** — what failed and how it was diagnosed.
+4. **Measurement notes** — benchmarks, tests, and before/after evidence.
+5. **Runbooks** — the operational procedure and recovery path.
+
+Link these pages together. The reader should be able to move from the working project to the decision, from the decision to the failure, and from the failure to the operational safeguard.
+
+## The employer view
+
+This structure makes the work easy to evaluate:
+
+| What the reader needs to know | Where to find it |
+| --- | --- |
+| Can this person build? | Project page and source repository |
+| Can this person make technical decisions? | Decision notes |
+| Can this person debug? | Error notes and incident records |
+| Can this person prove a result? | Measurements and verification |
+| Can this person operate software responsibly? | Runbooks and follow-up actions |
+
+The goal is not to publish every activity. Publish the evidence that makes engineering ability visible.

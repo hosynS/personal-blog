@@ -1,0 +1,31 @@
+---
+title: Distributed training recovery
+description: Recover a failed PyTorch DistributedDataParallel training run.
+---
+
+## System context
+
+- PyTorch DistributedDataParallel
+- Kubernetes GPU worker pool
+- Experiment tracking and object storage for checkpoints
+
+## Verification steps
+
+```bash
+kubectl -n mlops get pods -l job-name=<job-name>
+kubectl -n mlops logs job/<job-name> --tail=100
+```
+
+Expected output shows all workers scheduled, a consistent rendezvous configuration, and a checkpoint location for the latest successful epoch.
+
+## Remediation steps
+
+1. Preserve worker logs and the run identifier before deleting failed pods.
+2. Check GPU availability, node health, and rendezvous endpoint reachability.
+3. Validate that every worker uses the same image, dataset revision, and world size.
+4. Resume from the latest verified checkpoint rather than restarting from epoch zero.
+5. Confirm loss continuity and checkpoint writes after the first resumed epoch.
+
+## Rollback procedures
+
+Stop the resumed job if loss diverges or checkpoint writes fail. Restore the last known-good image and training configuration, then resume from the previous verified checkpoint.

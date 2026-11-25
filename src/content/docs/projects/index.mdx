@@ -1,0 +1,53 @@
+---
+title: Engineering Projects Directory
+description: Production-grade engineering systems, interactive Archify architectures, operational cheatsheets, debugging catalogs, and technical interview prep.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Welcome to the engineering projects directory. Every project documented here adheres to the **Five-Pillar Zero-Redundancy Standard**: providing deep technical proof through interactive architecture diagrams, developer cheatsheets, comprehensive failure analysis, and interview-ready trade-off defenses.
+
+---
+
+## Featured Engineering Systems
+
+<CardGrid>
+  <Card title="Distributed Task Management API" icon="rocket">
+    <p>High-throughput, distributed background task orchestration engine with JWT rate-limiting, Redis cache-aside, and transactional outbox persistence.</p>
+    
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; margin-bottom: 1rem;">
+      <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(29, 138, 153, 0.2); border: 1px solid rgba(29, 138, 153, 0.4); border-radius: 4px; color: #a4edf0;">Go / Gin</span>
+      <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(29, 138, 153, 0.2); border: 1px solid rgba(29, 138, 153, 0.4); border-radius: 4px; color: #a4edf0;">PostgreSQL 16</span>
+      <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(29, 138, 153, 0.2); border: 1px solid rgba(29, 138, 153, 0.4); border-radius: 4px; color: #a4edf0;">Redis 7</span>
+      <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(29, 138, 153, 0.2); border: 1px solid rgba(29, 138, 153, 0.4); border-radius: 4px; color: #a4edf0;">Kubernetes</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+      <a href="/projects/distributed-task-api/" style="font-size: 0.85rem; text-decoration: none; color: var(--sl-color-accent-high);">Overview & Stack →</a>
+      <a href="/projects/distributed-task-api/architecture/" style="font-size: 0.85rem; text-decoration: none; color: var(--sl-color-accent-high);">Archify Diagram →</a>
+      <a href="/projects/distributed-task-api/cheatsheet/" style="font-size: 0.85rem; text-decoration: none; color: var(--sl-color-accent-high);">Ops Cheatsheet →</a>
+      <a href="/projects/distributed-task-api/errors-and-fixes/" style="font-size: 0.85rem; text-decoration: none; color: var(--sl-color-accent-high);">Errors & RCA →</a>
+      <a href="/projects/distributed-task-api/interview-prep/" style="font-size: 0.85rem; text-decoration: none; color: var(--sl-color-accent-high);">Interview Prep →</a>
+    </div>
+  </Card>
+</CardGrid>
+
+---
+
+## How Projects Are Engineered & Documented
+
+```text
+Each Project Directory
+  ├── Overview (index.mdx)         → Business context, outcomes, single source of truth for tech stack
+  ├── Architecture (architecture)  → Interactive Archify SVG/HTML diagram, trust boundaries, dataflow
+  ├── Cheatsheet (cheatsheet)      → High-density commands, K8s snippets, env vars, emergency one-liners
+  ├── Errors & Fixes (errors)      → Exact logs, misleading clues, RCA, code diffs, prevention rules
+  └── Interview Prep (interview)   → System design questions, STAR behavioral proofs, edge cases
+```
+
+To create a new project following this exact specification, run:
+```bash
+npm run scaffold:project <project-slug> "Project Name"
+```
+
+Read the full specification in the [Project Documentation Standard](/project-standard/).

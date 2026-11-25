@@ -1,0 +1,73 @@
+---
+title: "Distributed Task Management API — Interview Questions & Deep Dives"
+description: "Comprehensive technical interview questions, system design defenses, and STAR-method behavioral responses derived from Distributed Task Management API."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+This section bridges project implementation with technical interview scenarios. Instead of generic textbook answers, every response references the concrete architecture, operational benchmarks, and real production incidents documented in this project.
+
+---
+
+## 1. System Design & Architectural Trade-offs
+
+### Q: Why did you choose Redis cache-aside instead of read-through caching or direct database scaling?
+**Model Answer:**  
+"In this architecture, our read-to-write ratio was roughly 92:8. Direct database read scaling via horizontal read replicas would introduce replication lag, leading to read-after-write inconsistency when users updated their profile and immediately refreshed the dashboard.
+
+Cache-aside with Redis provided sub-2ms read response times and gave our application explicit control over cache invalidation. When a write transaction commits to PostgreSQL, an invalidation message flushes the specific cache key, guaranteeing subsequent reads fetch fresh data without replica lag. To protect against cache stampede on expired hot keys, we coupled cache-aside with a distributed mutex locking pattern."
+
+*Cross-reference: Review the dataflow in [Architecture Design](./architecture/).*
+
+---
+
+### Q: How does the system handle backpressure when downstream third-party APIs slow down?
+**Model Answer:**  
+"If downstream dependencies experience latency spikes, synchronous HTTP handlers will exhaust their thread/connection pools waiting for responses, cascading the failure to the ingress layer.
+
+To eliminate this cascade, we decoupled all third-party interactions into an asynchronous job queue. The API gateway immediately accepts client requests, writes the task state to the transactional outbox table in PostgreSQL, and returns an HTTP 202 Accepted with a task UUID. Background workers consume jobs from Redis Streams with concurrency limits and exponential backoff retry policies. If downstream latency spikes, queue depth increases, but ingress latency remains constant under 40ms."
+
+---
+
+## 2. Behavioral & Debugging Questions (STAR Framework)
+
+### Q: Tell me about the most difficult bug you encountered in this project and how you solved it.
+**Model Answer (STAR Format):**
+
+- **Situation:** "During pre-launch load testing of our API with 500 concurrent connections, the service abruptly failed all incoming requests with HTTP 504 Gateway Timeouts, despite CPU and RAM on both the API server and PostgreSQL database idling below 15%."
+- **Task:** "I needed to isolate the bottleneck, restore system throughput without masking the symptom with arbitrary timeout increases, and guarantee it could not happen in production."
+- **Action:** "I connected to PostgreSQL and inspected `pg_stat_activity`. I observed that all 10 pooled connections were stuck in the `idle in transaction` state. By tracing the active query IDs back to application code, I discovered an asynchronous exception in our user service was thrown after acquiring the database client but before reaching the commit/rollback statement. Because the `finally` block lacked `client.release()`, every failed request permanently leaked a connection until the pool was exhausted. I refactored our database layer with a guaranteed RAII cleanup wrapper and set PostgreSQL's `idle_in_transaction_session_timeout` to 15 seconds."
+- **Result:** "Under the same 500-user concurrency test, zero connections leaked, p95 latency dropped from 30s timeout to 110ms, and we automated regression verification in CI."
+
+*Cross-reference: See code diff and exact diagnostic queries in [Errors & Fixes Log: Incident 1](./errors-and-fixes/#incident-1-database-connection-pool-exhaustion-under-concurrent-load).*
+
+---
+
+## 3. High-Concurrency & Edge-Case Gotchas
+
+### Q: What happens if the Redis cache instance crashes abruptly? How does the system avoid crashing the primary database?
+**Model Answer:**  
+"If Redis suddenly disappears, naive implementations allow every incoming request to fall through directly to the database, resulting in a cache avalanche that immediately exhausts database connections and crashes the server.
+
+To prevent this failure mode:
+1. **Circuit Breaker:** Our Redis client is wrapped in a circuit breaker. If Redis health checks fail or connection timeouts occur three times consecutively, the breaker opens.
+2. **Rate Limiting Fallback:** The API degrades gracefully into degraded mode: it applies an aggressive rate-limit token bucket at the ingress gateway, throttling throughput to the known max safe throughput of the PostgreSQL connection pool (e.g. 800 RPS instead of 10,000 RPS).
+3. **Stale-While-Revalidate:** Once Redis recovers, worker warm-up scripts repopulate the top 100 most active dataset caches before reopening full client traffic."
+
+---
+
+## 4. Quick-Fire Architectural Defenses
+
+| Question | Short Answer |
+| :--- | :--- |
+| **Why not MongoDB instead of PostgreSQL?** | Relational transactions, foreign key integrity, and ACID guarantees were required for financial and user state; JSONB columns handled semi-structured metadata cleanly. |
+| **How is secret leakage prevented in CI/CD?** | Pre-commit hooks run `gitleaks`; production environment variables are injected via Kubernetes Secrets / HashiCorp Vault at runtime. |
+| **How do you guarantee idempotency on retried payments/orders?** | Ingress checks an `Idempotency-Key` header against Redis. If the key exists, the cached result is returned; if not, an atomic lock is acquired before transaction execution. |
+
+---
+
+## Related References
+- [Project Overview & Metrics](./)
+- [Architecture Topology](./architecture/)
+- [Cheatsheet & Commands](./cheatsheet/)
+- [Full Error Catalog & RCAs](./errors-and-fixes/)

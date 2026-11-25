@@ -1,0 +1,23 @@
+{
+  "name": "ceril",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/build.mjs",
+    "preview": "astro preview",
+    "check": "astro-check",
+    "archify": "node tools/archify/bin/archify.mjs",
+    "scaffold:project": "node scripts/scaffold-project.mjs"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.37.6",
+    "astro": "^5.14.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@emnapi/runtime": "^1.11.3",
+    "typescript": "^5.9.3"
+  }
+}

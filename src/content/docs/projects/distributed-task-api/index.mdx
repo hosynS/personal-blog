@@ -1,0 +1,59 @@
+---
+title: "Distributed Task Management API — Overview"
+description: "Production-grade architecture, cheatsheet, debugging log, and interview guide for Distributed Task Management API."
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Executive Summary
+
+**Problem:** What real-world bottleneck, latency constraint, or architectural failure does this project solve?  
+**Solution:** High-level summary of the engineered system.  
+**Outcomes:** Core measurable results (e.g., 99.99% uptime, p95 latency reduced from 4.8s to 120ms, 15k RPS throughput).
+
+---
+
+## The Project Second Brain (Quick Navigation)
+
+Explore the four pillars of this project without repetitive narrative:
+
+<CardGrid>
+  <Card title="Architecture Design" icon="setting">
+    Interactive Archify topology, component trust boundaries, communication protocols, and dataflows.
+    <LinkCard title="View System Architecture" href="./architecture/" />
+  </Card>
+  <Card title="Developer Cheatsheet" icon="pencil">
+    Quick-reference CLI commands, Docker/K8s operations, API endpoints, and environment variables.
+    <LinkCard title="Open Project Cheatsheet" href="./cheatsheet/" />
+  </Card>
+  <Card title="Errors & Fixes Log" icon="warning">
+    Exact error logs, misleading symptoms, root-cause analysis, verified fixes, and prevention guardrails.
+    <LinkCard title="Explore Debugging Catalog" href="./errors-and-fixes/" />
+  </Card>
+  <Card title="Interview Questions" icon="document">
+    Technical deep-dives, architectural trade-offs, STAR behavioral questions, and tricky failure modes.
+    <LinkCard title="Review Interview Prep" href="./interview-prep/" />
+  </Card>
+</CardGrid>
+
+---
+
+## Tech Stack & Decision Matrix (Single Source of Truth)
+
+All project pages reference this canonical stack:
+
+| Component Layer | Technology | Version | Decision Reasoning & Trade-off |
+| :--- | :--- | :--- | :--- |
+| **API Runtime** | `[e.g., Go / Node / Rust]` | `[e.g., 1.22]` | Low latency, predictable memory footprint under concurrency |
+| **Primary Storage** | `[e.g., PostgreSQL]` | `[e.g., 16.2]` | ACID compliance, JSONB flexibility, transactional durability |
+| **Caching Layer** | `[e.g., Redis]` | `[e.g., 7.2]` | Sub-millisecond read latency, distributed token bucket rate limiting |
+| **Orchestration** | `[e.g., Kubernetes]` | `[e.g., 1.30]` | Horizontal Pod Autoscaling (HPA), automated rollouts and self-healing |
+| **Observability** | `[e.g., Prometheus & Grafana]` | `[e.g., 2.50]` | High-cardinality telemetry, latency percentile tracking |
+
+---
+
+## Repository & Artifacts
+
+- **Source Repository:** `[GitHub URL]`
+- **Live Deployment / Demo:** `[Deployment URL]`
+- **Interactive Architecture Diagram:** [Full Screen View](/diagrams/distributed-task-api-architecture.html)

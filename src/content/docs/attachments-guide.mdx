@@ -1,0 +1,95 @@
+---
+title: Attachments and evidence
+description: How to publish images, diagrams, PDFs, and Word documents with an engineering page.
+---
+
+Keep the explanation in Markdown or MDX. Use attachments as evidence that supports the explanation.
+
+## Where files go
+
+Use the public asset folders:
+
+```text
+public/
+  images/       screenshots, diagrams, dashboards
+  documents/    PDFs, DOCX files, exported reports
+```
+
+Files in `public/` are available from the site root. For example:
+
+```text
+public/images/api-architecture.png
+```
+
+is referenced as:
+
+```text
+/images/api-architecture.png
+```
+
+Use a project subfolder when a project has several assets:
+
+```text
+public/
+  images/
+    task-api/
+      architecture.png
+      latency-before.png
+      latency-after.png
+  documents/
+    task-api/
+      project-report.pdf
+      requirements.docx
+```
+
+## Add an image or diagram
+
+```mdx
+![Task API architecture](/images/task-api/architecture.png)
+
+**Figure 1:** The API, database, and deployment relationships.
+```
+
+Prefer SVG for diagrams and PNG for screenshots. Give every image useful alternative text and a caption explaining why it matters.
+
+## Link a PDF or Word document
+
+```mdx
+## Supporting evidence
+
+- [Read the project report (PDF)](/documents/task-api/project-report.pdf)
+- [Download the requirements (Word)](/documents/task-api/requirements.docx)
+```
+
+PDF is best for a finished report. DOCX is best as a downloadable editable source. Important findings should still be written on the page so readers do not need to download a file.
+
+## A complete evidence section
+
+```mdx
+## Measurements
+
+The change reduced p95 latency from 1.8 s to 420 ms in the repeatable load test.
+
+![Latency comparison](/images/task-api/latency-after.png)
+
+**Figure 2:** The post-change latency dashboard for the test window.
+
+See the [full measurement report](/documents/task-api/project-report.pdf) for the test setup and raw results.
+```
+
+## Publishing checklist
+
+- Remove passwords, tokens, private URLs, customer data, and internal identifiers.
+- Use stable, descriptive lowercase filenames such as `latency-before.png`.
+- Keep the main decision and conclusion in MDX.
+- Add a caption and explain what the reader should notice.
+- Link attachments from the relevant project, incident, or runbook page.
+- Check that every link works after running the site locally.
+
+Run the site and open the linked page:
+
+```powershell
+npm run dev
+```
+
+Then visit `http://localhost:4321` in your browser.

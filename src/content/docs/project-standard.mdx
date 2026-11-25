@@ -1,0 +1,85 @@
+---
+title: Project Documentation Standard
+description: The five-pillar, zero-redundancy engineering framework for portfolio projects, architecture designs, cheatsheets, failure logs, and interview prep.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Every project in this engineering notebook follows a standardized **Five-Pillar Architecture**. This structure eliminates repetition, ensures deep technical rigor, and transforms codebases into compelling evidence for employers and technical interviewers.
+
+## The Problem with Traditional Portfolios
+
+Most software engineering blogs suffer from two critical flaws:
+
+1. **Redundancy & Duplication:** The same introductory paragraph, technology stack list, and database choices are copied verbatim across blog posts, pull request notes, and interview prep sheets.
+2. **Surface-Level Summaries:** Projects describe what was built, but omit the real engineering: exact stack traces of failures, root cause analysis, production cheatsheets, and architectural trade-offs.
+
+## The Five-Pillar Architecture
+
+To maintain zero redundancy, each project is split into five specialized, deeply linked documents with distinct responsibilities:
+
+<CardGrid>
+  <Card title="1. Project Overview & Hub" icon="rocket">
+    Single source of truth for problem statement, business impact, core technology matrix, and navigation hub.
+  </Card>
+  <Card title="2. Archify Architecture" icon="setting">
+    Interactive Archify visual diagrams, component boundaries, communication protocols, and dataflow.
+  </Card>
+  <Card title="3. Production Cheatsheet" icon="pencil">
+    Zero-fluff developer quick reference: CLI commands, docker/k8s snippets, environment variables, and runbooks.
+  </Card>
+  <Card title="4. Errors & Debug Catalog" icon="warning">
+    Exact error logs, misleading symptoms, root-cause analysis (RCA), verifiable fixes, and prevention guardrails.
+  </Card>
+</CardGrid>
+
+<div style="margin-top: 1rem;">
+  <Card title="5. Interview Questions & Deep Dives" icon="document">
+    Technical interview Q&A derived directly from this project: system design trade-offs, STAR behavioral prompts, and edge-case failure modes.
+  </Card>
+</div>
+
+---
+
+## Zero-Redundancy Rules
+
+To prevent content duplication, follow these strict separation rules:
+
+| Content Element | Canonical Location | Rule for Other Pages |
+| :--- | :--- | :--- |
+| **Tech Stack & Versions** | `Overview (index.mdx)` | Reference via link; do not re-list package versions elsewhere. |
+| **System Topology & Diagram** | `Architecture (architecture.mdx)` | Use embedded Archify interactive diagram; do not re-diagram in cheatsheets. |
+| **CLI & Env Variables** | `Cheatsheet (cheatsheet.mdx)` | Pure reference table and code blocks; no background storytelling. |
+| **Bug Diffs & Stack Traces** | `Errors & Fixes (errors-and-fixes.mdx)` | Comprehensive RCA; interview questions link here rather than re-pasting logs. |
+| **Interview Model Answers** | `Interview Prep (interview-prep.mdx)` | Focus on articulation, trade-off defense, and STAR framing; references the other 4 pillars. |
+
+---
+
+## Archify Diagram Integration
+
+All project architecture designs leverage [Archify](https://github.com/tt-a1i/archify.git), producing interactive, dark/light theme aware, exportable diagrams.
+
+### Why Archify?
+- **Interactive Inspection:** Readers can click components, trace upstream/downstream data dependencies, inspect boundaries, and filter lenses.
+- **Self-Contained & Reproducible:** Authored using typed JSON Intermediate Representation (IR), validated automatically with zero broken geometries.
+- **Embedded Directly in Starlight:** Rendered inside `<ArchifyDiagram src="..." title="..." />` with full-screen expansion.
+
+---
+
+## Error & Debug Log Anatomy
+
+Every documented failure must adhere to this 6-point verification model:
+
+1. **Exact Error & Symptom:** Raw terminal output, HTTP status code, or alert metric.
+2. **Misleading Clues:** What intuition falsely suggested (demonstrates critical thinking).
+3. **Diagnostic Commands:** Exact tools executed (`EXPLAIN ANALYZE`, `strace`, `kubectl top`, `pprof`).
+4. **Root Cause Analysis (RCA):** The precise mechanism that failed under hood.
+5. **The Verified Fix:** Code diff or configuration update.
+6. **Prevention Guardrail:** The automated test, linter rule, or monitor added so it never recurs.
+
+---
+
+## Next Steps
+
+- Explore the [Flagship Project: Distributed Task API](/projects/distributed-task-api/) to see this standard in practice.
+- Use the project generator (`npm run scaffold:project <slug>`) to create a new project matching this standard.

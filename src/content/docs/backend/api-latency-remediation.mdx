@@ -1,0 +1,35 @@
+---
+title: API latency remediation
+description: Diagnose and safely reduce elevated API response times.
+---
+
+## System context
+
+- Kubernetes v1.30
+- HTTP API behind an ingress controller
+- PostgreSQL with application-side connection pooling
+- Prometheus and Grafana for service-level telemetry
+
+## Verification steps
+
+Run the following checks from an authenticated operations shell:
+
+```bash
+kubectl -n production get deploy api -o wide
+kubectl -n production top pods -l app=api
+curl -sS -o /dev/null -w 'status=%{http_code} ttfb=%{time_starttransfer}\n' https://api.example.com/health
+```
+
+Expected output is a healthy deployment, CPU below its saturation threshold, and an HTTP 200 response with a time-to-first-byte within the service objective.
+
+## Remediation steps
+
+1. Confirm the latency increase is isolated to the API service and record the time window.
+2. Compare request rate, error rate, database wait time, and pod saturation.
+3. Scale the deployment only when CPU or concurrency is the limiting signal.
+4. If database wait time is elevated, apply the approved query or pool configuration change.
+5. Re-run the verification commands and attach the before/after metrics to the incident record.
+
+## Rollback procedures
+
+Revert the deployment or configuration change through the same reviewed Git change that introduced it. Confirm the previous replica count and configuration are restored, then repeat the health and latency checks.

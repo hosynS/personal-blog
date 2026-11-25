@@ -1,0 +1,39 @@
+---
+title: Data engineering foundations
+description: A starting point for documenting reliable data pipelines, storage, and data operations.
+---
+
+This section documents how data moves through systems and how those systems are made reliable.
+
+## What belongs here
+
+- Data ingestion and collection
+- Batch and streaming pipelines
+- Data validation and quality checks
+- Data modeling and storage decisions
+- Orchestration and scheduling
+- Pipeline failures and recovery
+- Freshness, latency, and cost measurements
+- Backfills, retention, and operational runbooks
+
+## Evidence to capture
+
+For each data engineering project, document:
+
+1. **Decisions** — source systems, storage format, schema, orchestration, and trade-offs.
+2. **Failures** — bad records, schema changes, late data, duplicate events, and failed jobs.
+3. **Measurements** — freshness, throughput, completeness, failure rate, and processing cost.
+4. **Operations** — monitoring, retries, backfills, alerting, ownership, and rollback.
+
+## Future project structure
+
+Add project-specific pages under this section when you have real work to document:
+
+```text
+data-engineering/
+  project-name.mdx
+  schema-evolution-incident.mdx
+  pipeline-recovery-runbook.mdx
+```
+
+The portfolio project should show what was built. These pages should explain the decisions, failures, measurements, and operations behind it.

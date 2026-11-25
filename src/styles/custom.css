@@ -1,0 +1,108 @@
+:root {
+  --sl-color-accent-low: #102b3a;
+  --sl-color-accent: #1d8a99;
+  --sl-color-accent-high: #a4edf0;
+  --sl-color-white: #f3f7f8;
+  --sl-color-gray-1: #d7e2e4;
+  --sl-color-gray-6: #132025;
+  --sl-color-black: #0a1114;
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(29, 138, 153, 0.22), transparent 35%),
+    linear-gradient(135deg, #0a1114, #102b3a);
+}
+
+.hero h1 {
+  letter-spacing: -0.035em;
+  max-width: 13ch;
+}
+
+.hero .tagline {
+  color: var(--sl-color-accent-high);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.sl-markdown-content h2 {
+  letter-spacing: -0.02em;
+}
+
+.sl-markdown-content .card-grid {
+  gap: 1rem;
+}
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.benefit {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--sl-color-accent) 28%, transparent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--sl-color-accent-low) 42%, transparent);
+}
+
+.benefit strong {
+  color: var(--sl-color-accent-high);
+}
+
+.benefit span {
+  color: var(--sl-color-gray-1);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.sl-markdown-content .sl-link-card {
+  border-color: color-mix(in srgb, var(--sl-color-accent) 35%, transparent);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.sl-markdown-content .sl-link-card:hover {
+  border-color: var(--sl-color-accent);
+  transform: translateY(-2px);
+}
+
+.sl-markdown-content code {
+  border-radius: 0.25rem;
+}
+
+.sl-markdown-content table {
+  display: table;
+  width: 100%;
+}
+
+.sl-markdown-content blockquote {
+  border-inline-start-color: var(--sl-color-accent);
+}
+
+@media (min-width: 72rem) {
+  [data-has-sidebar][data-has-toc] {
+    --sl-toc-width: 15rem;
+  }
+
+  [data-has-sidebar][data-has-toc] .right-sidebar-container {
+    width: var(--sl-toc-width);
+  }
+
+  [data-has-sidebar][data-has-toc] .main-pane {
+    --sl-content-margin-inline: auto;
+    width: calc(100% - var(--sl-toc-width));
+  }
+
+  .right-sidebar-panel .sl-container {
+    max-width: calc(var(--sl-toc-width) - 2 * var(--sl-sidebar-pad-x));
+  }
+}
+
+@media (max-width: 720px) {
+  .benefit-grid {
+    grid-template-columns: 1fr;
+  }
+}

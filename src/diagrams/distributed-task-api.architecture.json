@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Distributed Task Management API Architecture",
+    "output": "distributed-task-api-architecture.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Clients",
+      "sublabel": "Web & Mobile Apps",
+      "pos": [40, 260],
+      "size": [130, 64]
+    },
+    {
+      "id": "ingress",
+      "type": "cloud",
+      "label": "Ingress Gateway",
+      "sublabel": "Envoy / Nginx",
+      "pos": [250, 260],
+      "size": [140, 64],
+      "tag": "Rate Limit :443"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth Service",
+      "sublabel": "OAuth 2.0 / JWT",
+      "pos": [250, 130],
+      "size": [140, 64],
+      "tag": "HMAC-SHA256"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Task API Core",
+      "sublabel": "Go / Gin Engine",
+      "pos": [480, 260],
+      "size": [150, 64],
+      "tag": "Stateless Replicas"
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis Cache",
+      "sublabel": "In-Memory :6379",
+      "pos": [720, 130],
+      "size": [150, 64],
+      "tag": "Sub-2ms Latency"
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL 16",
+      "sublabel": "Primary ACID :5432",
+      "pos": [720, 260],
+      "size": [150, 64],
+      "tag": "Pooled Connections"
+    },
+    {
+      "id": "queue",
+      "type": "messagebus",
+      "label": "Job Queue",
+      "sublabel": "Redis Streams / SQS",
+      "pos": [480, 420],
+      "size": [140, 64],
+      "tag": "Async Backpressure"
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Background Worker",
+      "sublabel": "Go Worker Pool",
+      "pos": [720, 420],
+      "size": [150, 64],
+      "tag": "Batch Execution"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Production Kubernetes Cluster (EKS / GKE)",
+      "wraps": ["ingress", "auth", "api", "redis", "postgres", "queue", "worker"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Private Data Tier VPC",
+      "wraps": ["redis", "postgres"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "users",
+      "to": "ingress",
+      "label": "HTTPS / TLS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "auth",
+      "to": "ingress",
+      "label": "JWT verify",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c3",
+      "from": "ingress",
+      "to": "api",
+      "label": "mTLS Route"
+    },
+    {
+      "id": "c4",
+      "from": "api",
+      "to": "redis",
+      "label": "Cache-aside",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "c5",
+      "from": "api",
+      "to": "postgres",
+      "label": "ACID query",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c6",
+      "from": "api",
+      "to": "queue",
+      "label": "Enqueue async",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c7",
+      "from": "queue",
+      "to": "worker",
+      "label": "Consume"
+    },
+    {
+      "id": "c8",
+      "from": "worker",
+      "to": "postgres",
+      "label": "Commit status",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Ingress & Edge",
+      "items": [
+        "Envoy Ingress terminates TLS and validates JWT signature via Auth Service.",
+        "Token-bucket rate limiting shields internal endpoints from abusive traffic."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Core Execution",
+      "items": [
+        "Stateless Go HTTP microservice with non-blocking concurrency.",
+        "Cache-aside pattern serves 92% of queries sub-2ms from Redis.",
+        "Transactional outbox pattern decouples background work from HTTP request cycles."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Resilience & Storage",
+      "items": [
+        "PostgreSQL 16 isolated in private VPC with bounded connection pools.",
+        "Background workers drain task queues with exponential backoff and dead-letter queues (DLQ)."
+      ]
+    }
+  ]
+}

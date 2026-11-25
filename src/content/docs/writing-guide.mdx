@@ -1,0 +1,93 @@
+---
+title: Writing guide
+description: A practical template for turning engineering work and failures into durable documentation.
+---
+
+Good technical writing is reconstructable. A reader should be able to understand the situation, follow the evidence, and verify the conclusion without needing the original conversation.
+
+## The four questions every project should answer
+
+Use the [evidence model](/evidence-model/) while working, not only after the project is finished:
+
+| Question | Capture |
+| --- | --- |
+| **What did I decide?** | Constraints, alternatives, trade-offs, and the chosen design |
+| **What failed?** | Exact symptoms, investigation, root cause, and failed attempts |
+| **How do I know?** | Baselines, tests, metrics, and before/after measurements |
+| **How is it operated?** | Health checks, alerts, recovery steps, and rollback |
+
+These notes can start as rough material. Polish them after the solution is verified.
+
+For screenshots, diagrams, PDFs, and Word documents, follow the [attachments and evidence guide](/attachments-guide/).
+
+## Choose the right page
+
+| Page type | Use it for | The reader should leave with |
+| --- | --- | --- |
+| Project note | A system, feature, migration, or design decision | Context, trade-offs, and a mental model |
+| Error note | A confusing error or failed experiment | Cause, diagnosis, and a reusable lesson |
+| Incident record | A time-bounded production failure | Impact, timeline, root cause, and follow-up |
+| Runbook | A known operational procedure | A safe sequence of actions and rollback |
+
+## Recommended structure
+
+### Project note
+
+1. Problem and constraints
+2. Context and architecture
+3. Decisions and trade-offs
+4. Implementation
+5. Measurements and verification
+6. Failures and lessons
+7. Operations and follow-up work
+
+### Error note
+
+1. Symptom and exact error
+2. Environment and reproduction
+3. Misleading clues
+4. Root cause
+5. Fix
+6. Prevention and the transferable lesson
+
+### Incident record
+
+1. Summary and blast radius
+2. Detection and timeline
+3. Evidence
+4. Root cause
+5. Mitigation and recovery
+6. Permanent actions
+
+## Make every claim testable
+
+Prefer:
+
+> p95 latency increased from 240 ms to 4.8 s after the deployment. Database pool wait time reached 30 s.
+
+Over:
+
+> The API became very slow because the database was overloaded.
+
+The first statement gives a reader something to verify. Include the command, dashboard query, log line, or test that supports an important conclusion.
+
+## Review checklist
+
+- [ ] A reader can identify the affected system and its scope.
+- [ ] The title describes the outcome or question, not only the technology.
+- [ ] Facts, hypotheses, and decisions are clearly separated.
+- [ ] Commands use placeholders for secrets and environment-specific values.
+- [ ] Verification includes an expected result.
+- [ ] Rollback or safe stopping conditions are documented where relevant.
+- [ ] Follow-up actions have an owner or a clear next step.
+- [ ] Related project notes, incidents, and runbooks are linked.
+
+## A useful title pattern
+
+Prefer a title that tells the reader why the page matters:
+
+- **Weak:** `PostgreSQL connection pools`
+- **Stronger:** `When replica scale-out exhausts the database pool`
+- **Strongest:** `When replica scale-out exhausts the database pool: diagnosis and prevention`
+
+The title is part of the documentation's information architecture. It should help a future reader decide whether the page contains the answer they need before they open it.

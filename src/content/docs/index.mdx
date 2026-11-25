@@ -1,0 +1,89 @@
+---
+title: Engineering notes that survive the incident
+description: A personal engineering notebook for projects, Archify architectures, cheatsheets, failure logs, and interview prep.
+template: splash
+hero:
+  tagline: CERIL · Personal Engineering Second Brain
+  title: Build it. Break it. Understand it. Document it.
+  actions:
+    - text: Explore Engineering Projects
+      link: /projects/
+      icon: right-arrow
+    - text: Five-Pillar Standard
+      link: /project-standard/
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+I’m building this space to capture the engineering work that is usually lost after the ticket is closed: the project decisions, the failed experiments, the useful errors, and the evidence that led to the fix. It is both a public blog and a private advantage: a searchable second brain for becoming faster, clearer, and more reliable as an engineer.
+
+Every project adheres to a strict **Zero-Redundancy Standard**—no duplicated prose or repetitive stack lists. Instead, each project is backed by deep architectural proofs, fast operational cheatsheets, comprehensive error catalogs, and project-specific technical interview prep.
+
+---
+
+## The Five Pillars of Every Project
+
+<CardGrid>
+  <Card title="Project Overview & Hub" icon="rocket">
+    Single source of truth for problem context, architecture decisions, and technology matrices without fluff.
+  </Card>
+  <Card title="Archify Architecture" icon="setting">
+    Interactive visual diagrams generated with Archify. Click to trace upstream/downstream paths, security groups, and boundaries.
+  </Card>
+  <Card title="Production Cheatsheets" icon="pencil">
+    Zero-narrative operational cheatsheets: CLI workflows, Docker/Kubernetes snippets, environment variables, and emergency runbooks.
+  </Card>
+  <Card title="Errors & Debugging Log" icon="warning">
+    Exact error logs, misleading symptoms, root-cause analyses (RCA), verified code diffs, and regression prevention.
+  </Card>
+</CardGrid>
+
+<div style="margin-top: 1rem;">
+  <Card title="Interview Questions & Deep Dives" icon="document">
+    Technical interview Q&A derived directly from real systems: system design trade-offs, STAR behavioral responses, and high-concurrency failure modes.
+  </Card>
+</div>
+
+---
+
+## Featured Project: Distributed Task Management API
+
+Explore our end-to-end flagship project showcasing all five pillars:
+
+<CardGrid>
+  <Card title="Interactive System Architecture" icon="setting" href="/projects/distributed-task-api/architecture/">
+    Explore the interactive Archify topology showing Envoy ingress, Go API core, Redis cache-aside, and PostgreSQL VPC.
+  </Card>
+  <Card title="Developer & Ops Cheatsheet" icon="pencil" href="/projects/distributed-task-api/cheatsheet/">
+    Instant reference for Docker, Kubernetes, API endpoints, environment variables, and DB emergency commands.
+  </Card>
+  <Card title="Database Pool Exhaustion RCA" icon="warning" href="/projects/distributed-task-api/errors-and-fixes/#incident-1-database-connection-pool-exhaustion-under-concurrent-load">
+    Deep-dive RCA into unhandled async promise rejections that leaked DB connections, and the verified RAII fix.
+  </Card>
+  <Card title="System Design & STAR Interview Prep" icon="document" href="/projects/distributed-task-api/interview-prep/">
+    Model answers defending Redis cache-aside vs replicas, backpressure handling, and behavioral interview questions.
+  </Card>
+</CardGrid>
+
+---
+
+## Why This Pays Off
+
+<div class="benefit-grid">
+  <div class="benefit">
+    <strong>Zero Redundancy</strong>
+    <span>Every fact lives in one canonical place. Architecture links to code; interview answers link to real RCAs.</span>
+  </div>
+  <div class="benefit">
+    <strong>Interview Ready</strong>
+    <span>Translates hands-on debugging and architectural decisions directly into high-scoring technical responses.</span>
+  </div>
+  <div class="benefit">
+    <strong>Operational Speed</strong>
+    <span>Past incidents and operational commands become instant cheatsheets instead of hours of re-investigation.</span>
+  </div>
+</div>
+
+> **The standard:** Every conclusion should be explainable from evidence, every architecture should be visually interactive, and every fix should be verifiable by someone who was not in the original incident.

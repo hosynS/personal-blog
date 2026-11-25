@@ -1,0 +1,39 @@
+---
+title: API latency regression — 2026-10-12
+description: Elevated API latency caused by exhausted database connections.
+---
+
+## Incident summary
+
+- **Detection:** 2026-10-12 09:14 UTC
+- **Acknowledgment:** 2026-10-12 09:18 UTC
+- **Resolution:** 2026-10-12 09:42 UTC
+- **Total downtime:** 0 minutes; degraded performance for 28 minutes
+- **Blast radius:** Public API requests; asynchronous workers were unaffected
+
+## The symptom
+
+The 95th percentile response time rose from 240 ms to 4.8 s. Requests remained mostly successful, but application logs showed:
+
+```text
+database pool timeout: waited 30000ms for an available connection
+```
+
+## Timeline of events
+
+- **09:14** — Latency alert crossed the service objective.
+- **09:18** — On-call confirmed elevated database wait time and acknowledged the incident.
+- **09:24** — Query volume was normal; connection usage was at the configured ceiling.
+- **09:31** — Pool ceiling was increased within the approved database capacity.
+- **09:42** — Latency and pool wait time returned to baseline.
+
+## Root cause analysis
+
+A connection-pool limit had been tuned for the previous API replica count. A routine scale-out increased concurrent request capacity without increasing the aggregate pool budget. Requests queued for a connection, producing latency without an immediate error-rate spike.
+
+## Permanent mitigations
+
+- [x] Add pool wait time and saturation to the API dashboard.
+- [x] Tie pool capacity review to replica-count changes.
+- [ ] Add an automated capacity check to deployment validation.
+- [ ] Document the approved pool-sizing formula in the API runbook.

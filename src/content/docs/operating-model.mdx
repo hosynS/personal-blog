@@ -1,0 +1,28 @@
+---
+title: Operating model
+description: How projects, failures, and fixes become reliable, reusable engineering knowledge.
+---
+
+CERIL follows a simple learning loop built around four kinds of evidence:
+
+1. **Decisions** — preserve the context, constraints, options, and trade-offs.
+2. **Failures** — record symptoms, timestamps, scope, impact, and rejected hypotheses.
+3. **Measurements** — establish a baseline and verify the result with tests or metrics.
+4. **Operations** — standardize the fix with checks, alerts, procedures, and rollback.
+
+The [evidence model](/evidence-model/) explains how these records connect. The portfolio proves that a project exists and works; the blog proves how I think about building, debugging, measuring, and operating it.
+
+The incident log is chronological and honest about uncertainty. Project notes explain intent and trade-offs. Runbooks are stable and actionable: they describe the known state, the commands that prove it, the ordered remediation, and the safest rollback.
+
+## Documentation quality bar
+
+Every technical page should answer these questions:
+
+- **What was the context?** Name the system, versions, dependencies, and constraints.
+- **What did we observe?** Include measurements, logs, commands, and timestamps.
+- **What did we believe, and why?** Make the reasoning and uncertainty visible.
+- **What changed?** Describe the smallest safe fix and its trade-offs.
+- **How do we know it worked?** Give a repeatable verification step.
+- **What should happen next time?** Link to a runbook, guardrail, test, or follow-up.
+
+When evidence is missing, say so. A precise unknown is more valuable than a confident guess.

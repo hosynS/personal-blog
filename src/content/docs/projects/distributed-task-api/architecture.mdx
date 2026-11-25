@@ -1,0 +1,62 @@
+---
+title: "Distributed Task Management API — Architecture Design"
+description: "Component topology, communication boundaries, and interactive Archify diagram for Distributed Task Management API."
+---
+
+import ArchifyDiagram from '../../../../components/ArchifyDiagram.astro';
+
+## System Overview & Boundaries
+
+This system is engineered for resilience, isolation, and bounded resource saturation. The architecture separates synchronous user-facing request paths from asynchronous worker queues and background tasks.
+
+---
+
+## Interactive Architecture Diagram
+
+Inspect components, trace data paths, and review dependencies directly on the interactive Archify canvas:
+
+<ArchifyDiagram
+  src="/diagrams/distributed-task-api-architecture.html"
+  title="Distributed Task Management API System Architecture"
+  height="580px"
+  caption="Generated using Archify. Click any component to inspect metadata or trace upstream/downstream connections."
+/>
+
+---
+
+## Component Responsibilities
+
+### 1. Ingress & API Gateway Layer
+- **Responsibility:** TLS termination, JWT authentication verification, distributed rate limiting.
+- **Failover / Protection:** Bounded queueing with circuit breakers to prevent cascade overload on internal services.
+
+### 2. Application Core Service
+- **Responsibility:** Business domain logic, transaction coordination, cache orchestration.
+- **Concurrency Model:** Non-blocking asynchronous I/O with worker pooling.
+
+### 3. State & Persistence Tier
+- **Primary Database:** Partitioned PostgreSQL cluster with connection pooling.
+- **Cache & Ephemeral Store:** In-memory Redis instance with LRU eviction and stale-while-revalidate policy.
+
+---
+
+## Critical Dataflows
+
+### Read Path (Cache-Aside Pattern)
+1. Ingress verifies client authorization token.
+2. API Service queries Redis cache with key `resource:<id>`.
+3. **Cache Hit:** Returns payload within 2ms.
+4. **Cache Miss:** Queries PostgreSQL via connection pool, populates Redis with 300s TTL, and returns response.
+
+### Write Path (Transactional Outbox)
+1. Write request commits to primary database within an atomic transaction.
+2. Invalidation event emitted to Redis cache.
+3. Message published to event stream for background asynchronous consumers.
+
+---
+
+## Related References
+- [Project Overview & Stack Details](./)
+- [Operational Runbook & Cheatsheet](./cheatsheet/)
+- [Failures & Debugging Solutions](./errors-and-fixes/)
+- [System Design Interview Discussion](./interview-prep/)

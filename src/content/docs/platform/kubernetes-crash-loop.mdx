@@ -1,0 +1,32 @@
+---
+title: Kubernetes crash-loop remediation
+description: A bounded workflow for investigating repeated container restarts.
+---
+
+## System context
+
+- Kubernetes v1.30
+- Deployment-managed workload
+- Container logs shipped to the centralized logging platform
+
+## Verification steps
+
+```bash
+kubectl -n production get pods -l app=worker
+kubectl -n production describe pod <pod-name>
+kubectl -n production logs <pod-name> --previous
+```
+
+Expected output identifies the termination reason and shows whether the previous container exited because of configuration, dependency, resource, or application failure.
+
+## Remediation steps
+
+1. Capture the pod description and previous-container logs before restarting anything.
+2. Classify the failure as configuration, dependency, resource, or code-related.
+3. Apply the smallest reviewed fix in the owning deployment configuration.
+4. Roll out the change and watch `kubectl rollout status deployment/worker`.
+5. Confirm the restart count stops increasing and the readiness probe remains healthy.
+
+## Rollback procedures
+
+Run `kubectl -n production rollout undo deployment/worker`, then verify rollout completion and service health. Preserve the failed revision and captured evidence for the incident record.

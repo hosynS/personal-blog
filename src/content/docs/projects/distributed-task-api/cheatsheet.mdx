@@ -1,0 +1,100 @@
+---
+title: "Distributed Task Management API — Developer & Ops Cheatsheet"
+description: "High-density command reference, environment variables, API endpoints, and operational one-liners for Distributed Task Management API."
+---
+
+Quick-reference cheatsheet for developers, reviewers, and on-call engineers. Zero background narrative — strictly actionable commands and configurations.
+
+---
+
+## 1. Quick Start Commands
+
+```bash
+# Clone and install dependencies
+git clone <repo-url> && cd distributed-task-api
+npm install # or make install / go mod download
+
+# Start local dependencies via Docker Compose
+docker compose up -d postgres redis
+
+# Run migrations and seed data
+npm run db:migrate
+npm run db:seed
+
+# Start development server with hot-reload
+npm run dev
+
+# Run full test suite with coverage
+npm run test:coverage
+```
+
+---
+
+## 2. Docker & Kubernetes Operations
+
+```bash
+# Build production container image
+docker build -t distributed-task-api:latest -f Dockerfile .
+
+# Inspect running pods
+kubectl -n production get pods -l app=distributed-task-api -o wide
+
+# Stream container logs with error filtering
+kubectl -n production logs -l app=distributed-task-api --tail=100 -f | grep -E "ERROR|WARN"
+
+# Port-forward to local machine for debugging
+kubectl -n production port-forward svc/distributed-task-api-service 8080:80
+
+# Restart deployment with zero downtime
+kubectl -n production rollout restart deployment/distributed-task-api
+kubectl -n production rollout status deployment/distributed-task-api
+```
+
+---
+
+## 3. Environment Variables Reference
+
+| Variable | Required | Default | Purpose |
+| :--- | :---: | :--- | :--- |
+| `NODE_ENV` | Yes | `development` | Runtime environment (`development`, `test`, `production`) |
+| `PORT` | No | `8080` | Port HTTP server binds to |
+| `DATABASE_URL` | Yes | — | PostgreSQL connection URI |
+| `DATABASE_POOL_MAX` | No | `20` | Maximum database pool connections per replica |
+| `REDIS_URL` | Yes | — | Redis connection string for caching |
+| `JWT_SECRET` | Yes | — | Key used for signing and verifying authorization tokens |
+| `LOG_LEVEL` | No | `info` | Minimum log verbosity (`debug`, `info`, `warn`, `error`) |
+
+---
+
+## 4. Primary API Endpoints
+
+| Method | Endpoint | Auth | Rate Limit | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| `GET` | `/health` | Public | None | Liveness and readiness probe |
+| `POST` | `/api/v1/auth/login` | Public | 10 req/min | Authenticate client and return JWT |
+| `GET` | `/api/v1/resources` | Bearer | 100 req/min | List resources (cached in Redis) |
+| `POST` | `/api/v1/resources` | Bearer | 30 req/min | Create resource and invalidate cache |
+| `DELETE`| `/api/v1/resources/:id` | Admin | 10 req/min | Remove resource and emit outbox event |
+
+---
+
+## 5. Emergency Incident One-Liners
+
+```bash
+# Flush stale cache during data divergence
+redis-cli -u $REDIS_URL FLUSHDB ASYNC
+
+# Check database locks and active connections
+psql $DATABASE_URL -c "SELECT pid, age(clock_timestamp(), query_start), usename, query FROM pg_stat_activity WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%';"
+
+# Kill a long-running hung query
+psql $DATABASE_URL -c "SELECT pg_terminate_backend(<pid>);"
+```
+
+---
+
+## Related References
+- [Project Overview](./)
+- [Architecture Design & Archify Diagram](./architecture/)
+- [Errors & Fixes Catalog](./errors-and-fixes/)
+- [Interview Prep & System Design](./interview-prep/)

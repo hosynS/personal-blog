@@ -1,0 +1,124 @@
+---
+title: "{{PROJECT_TITLE}} — Errors & Debugging Log"
+description: "Catalog of production failures, misleading clues, root-cause analyses, verified fixes, and prevention guardrails for {{PROJECT_TITLE}}."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+This catalog documents the hard-won engineering failures encountered during the development, testing, and scaling of {{PROJECT_TITLE}}. Each entry follows the 6-point verification standard: exact symptom, misleading clue, investigation, root cause, verified fix, and prevention rule.
+
+---
+
+## Incident 1: Database Connection Pool Exhaustion Under Concurrent Load
+
+### 1. Symptom & Exact Error
+Under simulated load testing (500 concurrent users), the service stopped responding and application logs filled with:
+
+```text
+ERROR [db_pool] pool timeout: connection pool exhausted (max_size=10)
+  at Pool.acquire (/app/node_modules/pg-pool/index.js:142:19)
+  at async UserService.getUserProfile (/app/src/services/user.service.js:45:18)
+HTTP/1.1 504 Gateway Timeout (TTFB: 30,002ms)
+```
+
+### 2. Misleading Clues
+- CPU and memory usage on both the API pods and the PostgreSQL server were below 15%.
+- Team initially suspected PostgreSQL server crash or networking firewall drops between Kubernetes worker nodes.
+
+### 3. Investigation & Diagnostic Commands
+```bash
+# 1. Inspect live PostgreSQL connection states
+psql $DATABASE_URL -c "SELECT state, count(*) FROM pg_stat_activity GROUP BY state;"
+
+# 2. Check connections in 'idle in transaction' state
+psql $DATABASE_URL -c "SELECT pid, state, age(clock_timestamp(), state_change), query FROM pg_stat_activity WHERE state = 'idle in transaction';"
+```
+**Observation:** 10 connections were stuck in `idle in transaction` for over 15 minutes each.
+
+### 4. Root Cause Analysis (RCA)
+An async error inside an unhandled promise rejection in `UserService.getUserProfile` threw an error *after* `pool.connect()` was called but *before* the transaction commit/rollback could execute. Because the `finally` block did not call `client.release()`, the connection was leaked forever until process termination.
+
+### 5. The Verified Fix
+Implemented the RAII / scope-guard pattern ensuring client release in `finally` and introduced automatic transaction wrappers:
+
+```javascript
+// BEFORE (Vulnerable to connection leaks)
+const client = await pool.connect();
+await client.query('BEGIN');
+const user = await findUser(client, id);
+await client.query('COMMIT');
+client.release(); // Skipped if findUser throws!
+
+// AFTER (Guaranteed cleanup)
+const client = await pool.connect();
+try {
+  await client.query('BEGIN');
+  const user = await findUser(client, id);
+  await client.query('COMMIT');
+} catch (err) {
+  await client.query('ROLLBACK');
+  throw err;
+} finally {
+  client.release(); // Always executed
+}
+```
+
+### 6. Prevention Guardrail
+- Added ESLint rule `no-floating-promises` and a unit test harness asserting connection pool returns to 0 active checkouts after simulated service failures.
+- Configured PostgreSQL server-side: `idle_in_transaction_session_timeout = '15s'`.
+
+---
+
+## Incident 2: JWT Refresh Token Expiration Miscalculation
+
+### 1. Symptom & Exact Error
+Users reported frequent unexpected logouts even while actively using the application. Mobile client logs reported:
+
+```json
+{
+  "status": 401,
+  "code": "TOKEN_EXPIRED",
+  "message": "jwt expired: current timestamp 1731500000 > exp 1731471200"
+}
+```
+
+### 2. Misleading Clues
+The token configuration file had clearly set: `REFRESH_TOKEN_TTL=7d` (7 days). The engineering team assumed clock skew on client devices.
+
+### 3. Investigation
+Inspecting the decoded JWT header and claims:
+```bash
+echo "eyJhbGciOi..." | jwt decode -
+# Output:
+# "iat": 1731471200,
+# "exp": 1731471207  <--- Only 7 SECONDS later!
+```
+
+### 4. Root Cause Analysis
+The JWT generation helper was passed `REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000`. However, the underlying JWT signing library interpreted integer values as **seconds**, not milliseconds. Therefore, passing a raw millisecond integer resulted in a timestamp modulo wrapping issue, causing the token to expire in seconds.
+
+### 5. The Verified Fix
+Passed explicit string duration units and introduced type-safe time duration wrappers:
+
+```typescript
+// Fixed token issuance with explicit unit
+const token = jwt.sign(payload, secret, { expiresIn: '7d' });
+```
+
+### 6. Prevention Guardrail
+Added integration tests checking token claim assertions:
+```typescript
+test('refresh token exp must be at least 6 days in future', () => {
+  const token = generateRefreshToken(mockUser);
+  const decoded = jwt.decode(token);
+  expect(decoded.exp - decoded.iat).toBe(7 * 24 * 3600);
+});
+```
+
+---
+
+## Related References
+- [Project Overview & Stack Details](./)
+- [Architecture & Archify Visual Map](./architecture/)
+- [Cheatsheet & Commands](./cheatsheet/)
+- [Interview Deep Dives & Lessons](./interview-prep/)
